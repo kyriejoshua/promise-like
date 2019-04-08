@@ -15,11 +15,30 @@ const promiseA = new PromiseLike((resolve, reject) => {
   }, 3000);
 });
 
+// then
 promiseA.then((data) => {
   console.info(data++)
   return data
 })
 .then((data) => {
   console.info(data++)
+})
+
+// race
+const promiseB = new PromiseLike((resolve, reject) => {
+  setTimeout(() => {
+    resolve('B');
+  }, 1000);
+});
+PromiseLike.race([promiseA, promiseB])
+.then((res) => {
+  console.info(res) // expected output: 'B'
+})
+
+// all
+const promiseC = '3C'
+PromiseLike.all([promiseA, promiseB, promiseC])
+.then((res) => {
+  console.info(res) // expected output: Array [0, 'B', '3C']
 })
 ```

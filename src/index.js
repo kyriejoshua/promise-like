@@ -10,6 +10,55 @@ const REJECTED = 'rejected';
 const isFunction = fn => typeof fn === 'function';
 
 export default class PromiseLike {
+  // 静态方法 resolve, reject, race, all 等
+  static resolve(value) {
+    // 当 race, all 等方法调用时，传入的入参是 promise, 无需再封装
+    if (value instanceof PromiseLike) { return value }
+    return new PromiseLike(resolve => resolve(value))
+  }
+
+  static reject(value) {
+    return new PromiseLike((resolve, reject) => reject(value))
+  }
+
+  /**
+   * 只要有一个 promise 返回，则返回结果
+   * @param {*} list
+   */
+  static race(list) {
+    return new PromiseLike((resolve, reject) => {
+      for (let p of list) {
+        this.resolve(p)
+        .then((res) => {
+          resolve(res)
+        }, (err) => {
+          reject(err)
+        })
+      }
+    })
+  }
+
+  static all(list) {
+    return new PromiseLike((resolve, reject) => {
+      let resolvedCount = 0; // 判断何时结束，处理结果 resolve it
+      let promiseList = [] // 保存最终的所有的值
+      list.map((promise, index) => {
+        this.resolve(promise)
+        .then((res) => {
+          promiseList[index] = res
+          resolvedCount++
+          // 判断的时机必须在 promise 内，否则在外面的话，同步执行后无法判断是否执行完毕
+          if (resolvedCount === list.length) {
+            resolve(promiseList)
+          }
+        })
+        .catch((err) => {
+          reject(err)
+        })
+      })
+    })
+  }
+
   constructor(executor) {
     if (!isFunction(executor)) {
       throw new Error('PromiseLike must accept a function as parameter!');
@@ -103,5 +152,9 @@ export default class PromiseLike {
           break;
       }
     });
+  }
+
+  catch(onRejected) {
+    return this.then(undefined, onRejected)
   }
 }
