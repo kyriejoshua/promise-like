@@ -5,7 +5,7 @@ const REJECTED = 'rejected';
 
 /**
  * 校验是否是函数
- * @param {*} fn
+ * @param {any} fn
  */
 const isFunction = fn => typeof fn === 'function';
 
@@ -22,8 +22,8 @@ export default class PromiseLike {
   }
 
   /**
-   * 只要有一个 promise 返回，则返回结果
-   * @param {*} list
+   * 只要有一个 promise 返回，则返回结果，注意，不是数组而是最先 resolve 的值
+   * @param {Array} list
    */
   static race(list) {
     return new PromiseLike((resolve, reject) => {
@@ -38,6 +38,10 @@ export default class PromiseLike {
     })
   }
 
+  /**
+   * 返回一个数组，里面是按原输入数组顺序排列的 resolve 或 reject 的值
+   * @param {Array} list
+   */
   static all(list) {
     return new PromiseLike((resolve, reject) => {
       let resolvedCount = 0; // 判断何时结束，处理结果 resolve it
@@ -104,6 +108,11 @@ export default class PromiseLike {
     }
   }
 
+  /**
+   * 支持链式调用的 then
+   * @param {Function} onFulfilled
+   * @param {Function} onRejected
+   */
   then(onFulfilled, onRejected) {
     const { value, status } = this;
 
@@ -154,7 +163,22 @@ export default class PromiseLike {
     });
   }
 
+  /**
+   * 对 then 的再次封装
+   * @param {Function} onRejected
+   */
   catch(onRejected) {
     return this.then(undefined, onRejected)
+  }
+
+  /**
+   * 不管结果如何都会执行 TODO
+   * @param {Function} fn
+   */
+  finally(fn) {
+    return this.then(
+      value => PromiseLike.resolve(fn()).then(() => value),
+      err => Promise.reject(fn()).then(() => { throw err })
+    )
   }
 }
