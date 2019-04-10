@@ -16,13 +16,8 @@ const promiseA = new PromiseLike((resolve, reject) => {
 });
 
 // then
-promiseA.then((data) => {
-  console.info(data++)
-  return data
-})
-.then((data) => {
-  console.info(data++)
-})
+const promiseA1 = promiseA.then(data => ++data)
+console.info(promiseA1)
 
 // race
 const promiseB = new PromiseLike((resolve, reject) => {

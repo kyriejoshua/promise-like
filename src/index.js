@@ -69,8 +69,8 @@ export default class PromiseLike {
     }
 
     // 默认状态和默认值
-    this.status = PENDING;
-    this.value = undefined;
+    this.PromiseStatus = PENDING;
+    this.PromiseValue = undefined;
 
     // 在既定状态下的回调序列，当状态符合时，内部的所有函数触发
     this.resolveCallbackQueues = [];
@@ -84,22 +84,53 @@ export default class PromiseLike {
   }
 
   resolve = (value) => {
-    if (this.status !== PENDING) { return; }
-    this.status = FULFILLED;
-    this.value = value;
+    if (this.PromiseStatus !== PENDING) { return; }
 
     // 符合状态时调用队列中的方法
-    let fn;
-    while (this.resolveCallbackQueues.length) {
-      fn = this.resolveCallbackQueues.shift();
-      fn(value);
+    const runResolveCallbackQueues = () => {
+      let fn;
+      while (this.resolveCallbackQueues.length) {
+        fn = this.resolveCallbackQueues.shift();
+        fn(value);
+      }
+    }
+
+    const runRejectCallbackQueues = () => {
+      let fn;
+      while (this.resolveCallbackQueues.length) {
+        fn = this.resolveCallbackQueues.shift();
+        fn(value);
+      }
+    }
+
+    // 如果传入的值是 promise 实例, 那么当前的状态是依赖于传入的实例的状态的，传参 p 执行到状态变更后，当前状态才会变更
+    // promiseB = promiseA.then(data => data)
+    // .then(data => { new Promise(() => 1) })
+    // promiseB
+    // PromiseStatus: pending
+    // PromiseValue: undefined
+    if (value instanceof PromiseLike) {
+      value.then((val) => {
+        this.PromiseStatus = FULFILLED
+        this.PromiseValue = val
+        runResolveCallbackQueues(val)
+      }, (err) => {
+        this.PromiseStatus = REJECTED
+        this.PromiseValue = err
+        runRejectCallbackQueues(err)
+      })
+    } else {
+      // 传参正常时执行
+      this.PromiseStatus = FULFILLED
+      this.PromiseValue = value
+      runResolveCallbackQueues(value)
     }
   }
 
   reject = (value) => {
-    if (this.status !== PENDING) { return; }
-    this.status = REJECTED;
-    this.value = value;
+    if (this.PromiseStatus !== PENDING) { return; }
+    this.PromiseStatus = REJECTED;
+    this.PromiseValue = value;
 
     let fn;
     while (this.rejectCallbackQueues.length) {
@@ -114,7 +145,7 @@ export default class PromiseLike {
    * @param {Function} onRejected
    */
   then(onFulfilled, onRejected) {
-    const { value, status } = this;
+    const { PromiseValue, PromiseStatus } = this;
 
     return new PromiseLike((onFulfilledNext, onRejectNext) => {
       const fulfilled = (data) => {
@@ -146,16 +177,16 @@ export default class PromiseLike {
         }
       };
 
-      switch (status) {
+      switch (PromiseStatus) {
         case PENDING:
           this.resolveCallbackQueues.push(fulfilled);
           this.rejectCallbackQueues.push(rejected);
           break;
         case FULFILLED:
-          fulfilled(value);
+          fulfilled(PromiseValue);
           break;
         case REJECTED:
-          rejected(value);
+          rejected(PromiseValue);
           break;
         default:
           break;
