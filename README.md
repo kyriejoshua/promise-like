@@ -26,14 +26,10 @@ const promiseB = new PromiseLike((resolve, reject) => {
   }, 1000);
 });
 PromiseLike.race([promiseA, promiseB])
-.then((res) => {
-  console.info(res) // expected output: 'B'
-})
+.then(res => console.info(res)) // expected output: 'B'
 
 // all
 const promiseC = '3C'
 PromiseLike.all([promiseA, promiseB, promiseC])
-.then((res) => {
-  console.info(res) // expected output: Array [0, 'B', '3C']
-})
+.then(res => console.info(res)) // expected output: Array [0, 'B', '3C']
 ```
