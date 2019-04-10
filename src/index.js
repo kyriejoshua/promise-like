@@ -147,19 +147,24 @@ export default class PromiseLike {
   then(onFulfilled, onRejected) {
     const { PromiseValue, PromiseStatus } = this;
 
-    return new PromiseLike((onFulfilledNext, onRejectNext) => {
+    return new PromiseLike((onFulfilledNext, onRejectedNext) => {
       const fulfilled = (data) => {
         try {
           if (isFunction(onFulfilled)) {
             // 顺利流程，从上一个 promise 状态里获取结果。再传给下一个调用
+            // 但需要考虑结果是 promise 的特殊情况，此时需要等 res 结束，然后继续调用
             const res = onFulfilled(data);
-            onFulfilledNext(res);
+            if (res instanceof PromiseLike) {
+              res.then(onFulfilledNext, onRejectedNext)
+            } else {
+              onFulfilledNext(res);
+            }
           } else {
             // 当 onFulfilled 不是函数的时候，但它已经是 fulfilled 状态时，直接跳过，执行当前的 resolve 回调
             onFulfilledNext(data);
           }
         } catch (error) {
-          onRejectNext(error);
+          onRejectedNext(error);
         }
       };
 
@@ -167,13 +172,17 @@ export default class PromiseLike {
         try {
           if (isFunction(onRejected)) {
             const res = onRejected(data);
-            onRejectNext(res);
+            if (res instanceof PromiseLike) {
+              res.then(onFulfilledNext, onRejectedNext)
+            } else {
+              onRejectedNext(res);
+            }
           } else {
             // 类同上面 resolve 里不是函数的情况，但此时将这次的值传给下个 promise.then 作为参数
             onFulfilledNext(data);
           }
         } catch (error) {
-          onRejectNext(data);
+          onRejectedNext(data);
         }
       };
 
