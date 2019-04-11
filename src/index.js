@@ -11,18 +11,27 @@ const isFunction = fn => typeof fn === 'function';
 
 export default class PromiseLike {
   // 静态方法 resolve, reject, race, all 等
+  /**
+   * https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise/resolve
+   * @param {any} value
+   */
   static resolve(value) {
     // 当 race, all 等方法调用时，传入的入参是 promise, 无需再封装
     if (value instanceof PromiseLike) { return value }
     return new PromiseLike(resolve => resolve(value))
   }
 
+  /**
+   * https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise/reject
+   * @param {any} value
+   */
   static reject(value) {
     return new PromiseLike((resolve, reject) => reject(value))
   }
 
   /**
    * 只要有一个 promise 返回，则返回结果，注意，不是数组而是最先 resolve 的值
+   * https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise/race
    * @param {Array} list
    */
   static race(list) {
@@ -40,6 +49,7 @@ export default class PromiseLike {
 
   /**
    * 返回一个数组，里面是按原输入数组顺序排列的 resolve 或 reject 的值
+   * https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise/all
    * @param {Array} list
    */
   static all(list) {
@@ -141,6 +151,7 @@ export default class PromiseLike {
 
   /**
    * 支持链式调用的 then
+   * https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise/then
    * @param {Function} onFulfilled
    * @param {Function} onRejected
    */
@@ -205,6 +216,7 @@ export default class PromiseLike {
 
   /**
    * 对 then 的再次封装
+   * https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise/catch
    * @param {Function} onRejected
    */
   catch(onRejected) {
