@@ -212,13 +212,14 @@ export default class PromiseLike {
   }
 
   /**
-   * 不管结果如何都会执行 TODO
+   * 不管结果如何都会执行，而且不论是否返回，resolve 或 reject 的值会保存
+   * https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise/finally
    * @param {Function} fn
    */
   finally(fn) {
     return this.then(
       value => PromiseLike.resolve(fn()).then(() => value),
-      err => Promise.reject(fn()).then(() => { throw err })
+      err => PromiseLike.resolve(fn()).then(() => { throw err })
     )
   }
 }

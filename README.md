@@ -32,4 +32,10 @@ PromiseLike.race([promiseA, promiseB])
 const promiseC = '3C'
 PromiseLike.all([promiseA, promiseB, promiseC])
 .then(res => console.info(res)) // expected output: Array [0, 'B', '3C']
+
+// finally
+const finallyResolved = PromiseLike.resolve(4).finally(() => {}) // expected output: fulfilled: 4
+const finallyRejected = PromiseLike.reject(444).finally(() => {}) // expected output: rejected: 444
+console.info('finallyResolved', `${finallyResolved.PromiseStatus}: ${finallyResolved.PromiseValue}`)
+console.info('finallyRejected', `${finallyRejected.PromiseStatus}: ${finallyRejected.PromiseValue}`)
 ```
