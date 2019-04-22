@@ -38,4 +38,14 @@ const finallyResolved = PromiseLike.resolve(4).finally(() => {}) // expected out
 const finallyRejected = PromiseLike.reject(444).finally(() => {}) // expected output: rejected: 444
 console.info('finallyResolved', `${finallyResolved.PromiseStatus}: ${finallyResolved.PromiseValue}`)
 console.info('finallyRejected', `${finallyRejected.PromiseStatus}: ${finallyRejected.PromiseValue}`)
+// 早先的版本里是同步调用时，结果如上是实时输出的
+// 最新版改为异步调用，在异步进程后显示结果
+window.setTimeout(() => {
+  console.info('finallyResolved', `${finallyResolved.PromiseStatus}: ${finallyResolved.PromiseValue}`)
+  console.info('finallyRejected', `${finallyRejected.PromiseStatus}: ${finallyRejected.PromiseValue}`)
+}, 10)
 ```
+
+### Other
+
+* [Promise/A+](https://promisesaplus.com)

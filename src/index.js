@@ -113,40 +113,51 @@ export default class PromiseLike {
       }
     }
 
-    // 如果传入的值是 promise 实例, 那么当前的状态是依赖于传入的实例的状态的，传参 p 执行到状态变更后，当前状态才会变更
-    // promiseB = promiseA.then(data => data)
-    // .then(data => { new Promise(() => 1) })
-    // promiseB
-    // PromiseStatus: pending
-    // PromiseValue: undefined
-    if (value instanceof PromiseLike) {
-      value.then((val) => {
+    const _resolve = () => {
+      // 如果传入的值是 promise 实例, 那么当前的状态是依赖于传入的实例的状态的，传参 p 执行到状态变更后，当前状态才会变更
+      // promiseB = promiseA.then(data => data)
+      // .then(data => { new Promise(() => 1) })
+      // promiseB
+      // PromiseStatus: pending
+      // PromiseValue: undefined
+      if (value instanceof PromiseLike) {
+        value.then((val) => {
+          this.PromiseStatus = FULFILLED
+          this.PromiseValue = val
+          runResolveCallbackQueues(val)
+        }, (err) => {
+          this.PromiseStatus = REJECTED
+          this.PromiseValue = err
+          runRejectCallbackQueues(err)
+        })
+      } else {
+        // 传参正常时执行
         this.PromiseStatus = FULFILLED
-        this.PromiseValue = val
-        runResolveCallbackQueues(val)
-      }, (err) => {
-        this.PromiseStatus = REJECTED
-        this.PromiseValue = err
-        runRejectCallbackQueues(err)
-      })
-    } else {
-      // 传参正常时执行
-      this.PromiseStatus = FULFILLED
-      this.PromiseValue = value
-      runResolveCallbackQueues(value)
+        this.PromiseValue = value
+        runResolveCallbackQueues(value)
+      }
     }
+
+    // 同步调用转为异步调用
+    window.setTimeout(_resolve, 0)
   }
 
   reject = (value) => {
     if (this.PromiseStatus !== PENDING) { return; }
-    this.PromiseStatus = REJECTED;
-    this.PromiseValue = value;
 
-    let fn;
-    while (this.rejectCallbackQueues.length) {
-      fn = this.rejectCallbackQueues.shift();
-      fn(value);
+    const _reject = () => {
+      this.PromiseStatus = REJECTED;
+      this.PromiseValue = value;
+
+      let fn;
+      while (this.rejectCallbackQueues.length) {
+        fn = this.rejectCallbackQueues.shift();
+        fn(value);
+      }
     }
+
+    // 支持异步调用
+    window.setTimeout(_reject, 0)
   }
 
   /**
