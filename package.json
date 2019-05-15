@@ -1,6 +1,6 @@
 {
   "name": "promise-like",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "promise like",
   "main": "src/index.js",
   "scripts": {
