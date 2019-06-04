@@ -49,6 +49,7 @@ export default class PromiseLike {
 
   /**
    * 返回一个数组，里面是按原输入数组顺序排列的 resolve 或 reject 的值
+   * [duringTime] 数组中属性，返回了调用时间
    * 或者可以自定义优先完成的 promise 就继续调用, 见 prefer
    * https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise/all
    * @param {Array} list
@@ -56,6 +57,7 @@ export default class PromiseLike {
    */
   static all(list, len = list.length) {
     return new PromiseLike((resolve, reject) => {
+      const startTime = Date.now()
       let resolvedCount = 0; // 判断何时结束，处理结果 resolve it
       let promiseList = [] // 保存最终的所有的值
       list.map((promise, index) => {
@@ -65,6 +67,7 @@ export default class PromiseLike {
           resolvedCount++
           // 判断的时机必须在 promise 内，否则在外面的话，同步执行后无法判断是否执行完毕
           if (resolvedCount === len) {
+            promiseList.duringTime = Date.now() - startTime + 'ms'
             resolve(promiseList)
           }
         })

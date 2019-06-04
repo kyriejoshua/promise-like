@@ -49,3 +49,4 @@ window.setTimeout(() => {
 ### Other
 
 * [Promise/A+](https://promisesaplus.com)
+* [ecma262](https://tc39.github.io/ecma262/#sec-promise-objects)
