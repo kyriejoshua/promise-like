@@ -9,19 +9,20 @@
 
 ```javascript
 const promiseA = new PromiseLike((resolve, reject) => {
-  let num = 0;
   setTimeout(() => {
-    resolve(num);
+    console.info('A');
+    resolve('A');
   }, 3000);
 });
 
 // then
-const promiseA1 = promiseA.then(data => ++data)
+const promiseA1 = promiseA.then(data => `${data}1`)
 console.info(promiseA1)
 
 // race
 const promiseB = new PromiseLike((resolve, reject) => {
   setTimeout(() => {
+    console.info('B');
     resolve('B');
   }, 1000);
 });
@@ -31,7 +32,19 @@ PromiseLike.race([promiseA, promiseB])
 // all
 const promiseC = '3C'
 PromiseLike.all([promiseA, promiseB, promiseC])
-.then(res => console.info(res)) // expected output: Array [0, 'B', '3C']
+.then(res => console.info(res)) // expected output: Array [0, 'B', '3C', duringTime: '123ms']
+
+const createPromise = (timer, index) => () =>
+  new PromiseLike((resolve) => {
+    window.setTimeout(() => {
+      console.info(`promise${index}`, new Date())
+      resolve()
+    }, timer)
+  })
+
+// sequence
+PromiseLike.sequence([createPromise(300, 1), createPromise(200, 2), createPromise(100, 3)])
+.then(res => console.info(res)) // expected output: promise1, promise2, promise3
 
 // finally
 const finallyResolved = PromiseLike.resolve(4).finally(() => {}) // expected output: fulfilled: 4

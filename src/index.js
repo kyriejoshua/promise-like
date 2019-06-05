@@ -79,7 +79,7 @@ export default class PromiseLike {
   }
 
   /**
-   * 自定义优先完成的 promise
+   * 自定义优先完成的 promise 数量，少于等于总数的长度
    * @param {Array} list
    * @param {Number} num
    */
@@ -87,6 +87,26 @@ export default class PromiseLike {
     if (!Number.isInteger(num)) { throw new Error('PromiseLike.prefer must accpet an int number as a parameter!') }
     num = num < list.length ? num : list.length
     return PromiseLike.all(list, num)
+  }
+
+  /**
+   * [sequence 顺序执行数组内的 promise, 返回的仅仅是 resolved 的值，注意传入的 promise 状态不能已经执行完毕]
+   * @param  {Array} list [description]
+   * @return {PromiseLike}      [description]
+   */
+  static sequence(list) {
+    return new PromiseLike((resolve, reject) => {
+      return list.reduce((currentPromise, currentValue, index) => {
+        if (!(currentPromise instanceof PromiseLike)) {
+          currentPromise = PromiseLike.resolve(currentPromise)
+        }
+        return currentPromise
+        .then(currentValue)
+        .catch((err) => {
+          reject(err)
+        })
+      }, PromiseLike.resolve())
+    })
   }
 
   constructor(executor) {
@@ -261,5 +281,17 @@ export default class PromiseLike {
       value => PromiseLike.resolve(fn()).then(() => value),
       err => PromiseLike.resolve(fn()).then(() => { throw err })
     )
+  }
+
+  /**
+   * [done 兜底的方法，有效，但不推荐使用]
+   * @param  {Function}   onFuifilled [description]
+   * @param  {Function}   onRejected  [description]
+   */
+  done(onFuifilled, onRejected) {
+    this.then(onFuifilled, onRejected)
+    .catch((err) => {
+      window.setTimeout(() => { throw err });
+    });
   }
 }
