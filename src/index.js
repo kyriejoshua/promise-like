@@ -10,14 +10,19 @@ const REJECTED = 'rejected';
 const isFunction = fn => typeof fn === 'function';
 
 export default class PromiseLike {
-  // 静态方法 resolve, reject, race, all 等
+  // 静态方法 resolve, reject, race, all, is, prefer, sequence 等
+
+  static is(value) {
+    return value instanceof PromiseLike
+  }
+
   /**
    * https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise/resolve
    * @param {any} value
    */
   static resolve(value) {
     // 当 race, all 等方法调用时，传入的入参是 promise, 无需再封装
-    if (value instanceof PromiseLike) { return value }
+    if (PromiseLike.is(value)) { return value }
     return new PromiseLike(resolve => resolve(value))
   }
 
@@ -97,7 +102,7 @@ export default class PromiseLike {
   static sequence(list) {
     return new PromiseLike((resolve, reject) => {
       return list.reduce((currentPromise, currentValue, index) => {
-        if (!(currentPromise instanceof PromiseLike)) {
+        if (!(PromiseLike.is(currentPromise))) {
           currentPromise = PromiseLike.resolve(currentPromise)
         }
         return currentPromise
@@ -107,6 +112,10 @@ export default class PromiseLike {
         })
       }, PromiseLike.resolve())
     })
+  }
+
+  static toString() {
+    return '[object PromiseLike]'
   }
 
   constructor(executor) {
@@ -156,7 +165,7 @@ export default class PromiseLike {
       // promiseB
       // PromiseStatus: pending
       // PromiseValue: undefined
-      if (value instanceof PromiseLike) {
+      if (PromiseLike.is(value)) {
         value.then((val) => {
           this.PromiseStatus = FULFILLED
           this.PromiseValue = val
@@ -212,7 +221,7 @@ export default class PromiseLike {
             // 顺利流程，从上一个 promise 状态里获取结果。再传给下一个调用
             // 但需要考虑结果是 promise 的特殊情况，此时需要等 res 结束，然后继续调用
             const res = onFulfilled(data);
-            if (res instanceof PromiseLike) {
+            if (PromiseLike.is(res)) {
               res.then(onFulfilledNext, onRejectedNext)
             } else {
               onFulfilledNext(res);
@@ -230,7 +239,7 @@ export default class PromiseLike {
         try {
           if (isFunction(onRejected)) {
             const res = onRejected(data);
-            if (res instanceof PromiseLike) {
+            if (PromiseLike.is(res)) {
               res.then(onFulfilledNext, onRejectedNext)
             } else {
               onRejectedNext(res);

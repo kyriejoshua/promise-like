@@ -15,6 +15,8 @@ const promiseA = new PromiseLike((resolve, reject) => {
   }, 3000);
 });
 
+console.info(PromiseLike.is(1), PromiseLike.is(PromiseLike.resolve()), PromiseLike.is(Promise.resolve()), promiseA) // expected output: false true false true
+
 // then
 const promiseA1 = promiseA.then(data => `${data}1`)
 console.info(promiseA1)
