@@ -1,11 +1,11 @@
 {
   "name": "promise-like",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "promise like",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "lint": "eslint --fix src",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "promises-aplus-tests dist"
   },
   "repository": {
     "type": "git",
@@ -20,12 +20,14 @@
     "url": "https://github.com/kyriejoshua/promise-like/issues"
   },
   "homepage": "https://github.com/kyriejoshua/promise-like#readme",
-  "dependencies": {},
   "devDependencies": {
     "eslint": "^5.15.3",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-jsx-a11y": "^6.2.1",
-    "eslint-plugin-react": "^7.12.4"
+    "eslint-plugin-react": "^7.12.4",
+    "promises-aplus-tests": "^2.1.2",
+    "tslint": "^6.1.3",
+    "typescript": "^4.3.5"
   }
 }

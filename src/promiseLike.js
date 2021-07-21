@@ -246,7 +246,8 @@ export default class PromiseLike {
             }
           } else {
             // 类同上面 resolve 里不是函数的情况，但此时将这次的值传给下个 promise.then 作为参数
-            onFulfilledNext(data);
+            // 此处需要抛出异常，先前是写错的
+            onRejectedNext(data);
           }
         } catch (error) {
           onRejectedNext(data);
