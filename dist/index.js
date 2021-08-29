@@ -235,7 +235,20 @@ var PromiseLike = /** @class */ (function () {
         if (PromiseLike.is(value)) {
             return value;
         }
-        return new PromiseLike(function (resolve) { return resolve(value); });
+        return new PromiseLike(function (resolve, reject) {
+            // 如果传入了实现 thenable 接口的对象，则将其展开并作为返回值
+            if (value && exports.isObject(value) && exports.isFunction(value.then)) {
+                return queueMicrotask(function () {
+                    try {
+                        value.then(resolve, reject);
+                    }
+                    catch (error) {
+                        reject(error);
+                    }
+                });
+            }
+            return resolve(value);
+        });
     };
     PromiseLike.reject = function (value) {
         return new PromiseLike(function (resolve, reject) { return reject(value); });

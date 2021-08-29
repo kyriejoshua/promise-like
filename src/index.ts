@@ -267,7 +267,19 @@ class PromiseLike implements IPromiseType {
     if (PromiseLike.is(value)) {
       return value;
     }
-    return new PromiseLike((resolve) => resolve(value));
+    return new PromiseLike((resolve, reject) => {
+      // 如果传入了实现 thenable 接口的对象，则将其展开并作为返回值
+      if (value && isObject(value) && isFunction(value.then)) {
+        return queueMicrotask(() => {
+          try {
+            value.then(resolve, reject);
+          } catch (error) {
+            reject(error);
+          }
+        });
+      }
+      return resolve(value);
+    });
   }
 
   static reject(value?: any) {
